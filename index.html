@@ -1,0 +1,377 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div id="title" data-scale="3" data-z="50" data-x="1200" data-y="-800" class="step">
+<h1>MojoliciousでリアルタイムWeb</h1>
+
+<!-- data-x="1200" -->
+<!-- data-y="-800" -->
+<!-- data-z="50" -->
+<!-- data-scale="3" -->
+
+<p>こばやし けんいち</p>
+
+</div>
+<div data-x="0" data-z="0" id="title" class="step" data-y="800">
+<h2>自己紹介 <img src="https://si0.twimg.com/profile_images/342650641/IMG_0430_2_bigger.jpg" alt="ねこ" /></h2>
+
+<!-- data-x="0" -->
+<!-- data-y="800" -->
+<!-- data-z="0" -->
+
+<ul>
+<li>こばやし けんいち <a href="http://twitter.com/Niratama">@Niratama</a></li>
+<li>Perlでサーバーサイドプログラム書いてます</li>
+<li>が、最近はサーバのお守りまでやってる気が</li>
+</ul>
+
+</div>
+<div data-x="1200" id="title" data-y="800" class="step">
+<h2>いや本当は</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="800" -->
+
+<ul>
+<li>Raspberry Pi使ったネタがやりたかったんだけど</li>
+<li>時間足りなかったので手軽なところで……</li>
+</ul>
+
+</div>
+<div data-y="1600" class="step" id="title" data-x="0">
+<h2>Mojoliciousについて</h2>
+
+<!-- data-x="0" -->
+<!-- data-y="1600" -->
+
+<ul>
+<li><strong>"Real-time web framework"</strong></li>
+<li>基本的には<a href="https://metacpan.org/release/Mojolicious">Mojolicious</a>だけインストールすれば使える</li>
+<li>サーバーサイドだけでなくクライアント側を書くのにも便利</li>
+<li>コマンドラインやワンライナーのための仕組みが用意されている</li>
+<li>「<a href="https://metacpan.org/source/SRI/Mojolicious-4.11/Changes">日刊Mojolicious</a>」にハマるとちょっと困る</li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="1200" id="title">
+<h2>リアルタイムWebしてみる</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="1600" -->
+
+<ul>
+<li><a href="https://metacpan.org/module/SRI/Mojolicious-4.11/lib/Mojolicious/Guides/Cookbook.pod">Mojolicious::Guides::Cookbook</a>に例が
+<ul>
+<li><a href="https://metacpan.org/module/Mojo::IOLoop">Mojo::IOLoop</a>を使ったノンブロッキング処理</li>
+<li>WebSocket</li>
+<li>EventSource</li>
+</ul></li>
+<li>デモに使うソースは<a href="https://github.com/niratama/chibapm3">https://github.com/niratama/chibapm3</a>に置いてあります</li>
+</ul>
+
+</div>
+<div class="step" data-y="2400" id="title" data-x="0">
+<h2>Mojo::IOLoopを使ったノンブロッキング処理</h2>
+
+<!-- data-x="0" -->
+<!-- data-y="2400" -->
+
+<ul>
+<li>内蔵のWebサーバを使っていれば<a href="https://metacpan.org/module/Mojo::IOLoop">Mojo::IOLoop</a>を使ったノンブロッキング処理が使える</li>
+<li>timerなんかも使える←使い道は？</li>
+</ul>
+
+</div>
+<div id="title" data-x="0" data-y="3200" class="step">
+<h2>デモ:atndlist.pl</h2>
+
+<!-- data-x="0" -->
+<!-- data-y="3200" -->
+
+<ul>
+<li>TwitterのIDからプロフィール情報とATNDのイベント参加履歴を取得して表示するデモ</li>
+</ul>
+
+</div>
+<div class="step" data-y="4000" data-x="0" id="title">
+<h2>atndlist.pl(1)</h2>
+
+<!-- data-x="0" -->
+<!-- data-y="4000" -->
+
+<?prettify lang=perl?>
+
+<pre><code>  Mojo::IOLoop-&gt;delay(
+    # 並列処理の準備
+    sub {
+      my $delay = shift;
+
+      # APIのURL設定(中略)
+      # それぞれのAPIを呼び出す→レスポンスはdelayで受け取る
+      $self-&gt;ua-&gt;get($twitter_api =&gt; $delay-&gt;begin);
+      $self-&gt;ua-&gt;get($atnd_api =&gt; $delay-&gt;begin);
+    },
+</code></pre>
+
+</div>
+<div data-y="4800" class="step" data-x="0" id="title">
+<h2>atndlist.pl(2)</h2>
+
+<!-- data-x="0" -->
+<!-- data-y="4800" -->
+
+<?prettify lang=perl?>
+
+<pre><code>    # delayの値が揃った時に実行される処理
+    sub {
+      my ($delay, $twitter, $atnd) = @_;
+      $self-&gt;render(
+        template =&gt; 'search',
+        twitter_id =&gt; $id,
+        user =&gt; $twitter-&gt;res-&gt;json,
+        events =&gt; $atnd-&gt;res-&gt;json-&gt;{events}
+      );
+    }
+  );
+</code></pre>
+
+</div>
+<div data-y="2400" class="step" id="title" data-x="1200">
+<h2>WebSocket</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="2400" -->
+
+<ul>
+<li><a href="http://tools.ietf.org/html/rfc6455">RFC 6455</a></li>
+<li>WebアプリケーションとWebサーバとの双方向通信</li>
+</ul>
+
+</div>
+<div id="title" data-x="1200" class="step" data-y="3200">
+<h2>デモ:reverse.pl</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="3200" -->
+
+<ul>
+<li>クリックした升目をWebSocketで通信して、複数のブラウザでリアルタイム共有するデモ</li>
+</ul>
+
+</div>
+<div data-x="1200" id="title" data-y="4000" class="step">
+<h2>reverse.pl(1)</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="4000" -->
+
+<?prettify lang=perl?>
+
+<pre><code>  # コネクションのタイムアウトを長めにする
+  Mojo::IOLoop-&gt;stream($self-&gt;tx-&gt;connection)-&gt;timeout(300);
+  # MyEventのreceiveイベント受信時の処理
+  my $cb = sub {
+      my ($event, $cell) = @_;
+      $self-&gt;send($cell);
+  };
+  # MyEventのreceiveイベントに登録する
+  $event-&gt;on(receive =&gt; $cb);
+</code></pre>
+
+</div>
+<div class="step" data-y="4800" id="title" data-x="1200">
+<h2>reverse.pl(2)</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="4800" -->
+
+<?prettify lang=perl?>
+
+<pre><code>  # WebSocketのメッセージ受信時の処理
+  $self-&gt;on(message =&gt; sub {
+    my ($self, $cell) = @_;
+    # MyEventに送る
+    $event-&gt;send($cell);
+  });
+  # WebSocket終了時の処理
+  $self-&gt;on(finish =&gt; sub {
+    my ($self, $code, $reason) = @_;
+    # MyEventのreceiveイベント受け取りをやめる
+    $event-&gt;unsubscribe(receive =&gt; $cb);
+  });
+</code></pre>
+
+</div>
+<div data-x="1200" id="title" data-y="5600" class="step">
+<h2>reverse.pl(3)</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="5600" -->
+
+<?prettify lang=javascript?>
+
+<pre><code>    var ws = new WebSocket('&lt;%= url_for('share')-&gt;to_abs %&gt;');
+    ws.onmessage = function(event) {
+      var cellid = '#' + event.data;
+      $(cellid).toggleClass('on');
+    };
+    $('.cell').click(function() {
+      var $cell = $(this);
+      ws.send($cell.attr('id'));
+    });
+</code></pre>
+
+</div>
+<div data-y="2400" class="step" data-x="2400" id="title">
+<h2>EventSource</h2>
+
+<!-- data-x="2400" -->
+<!-- data-y="2400" -->
+
+<ul>
+<li><a href="http://dev.w3.org/html5/eventsource/">Server-Sent Events</a>というHTML5からの新機能</li>
+<li>Webサーバからクライアントへのイベントやデータのプッシュ</li>
+<li>やってることはLong polling</li>
+<li>コネクション切れたらEventSourceのオブジェクトが生きているうちは勝手に再接続する</li>
+<li><a href="https://metacpan.org/module/Mojolicious::Controller">Mojolicious::Controller</a>にはコンテンツを細切れで送るためのメソッドがある</li>
+</ul>
+
+</div>
+<div data-x="2400" id="title" data-y="3200" class="step">
+<h2>デモ:logtail.pl</h2>
+
+<!-- data-x="2400" -->
+<!-- data-y="3200" -->
+
+<ul>
+<li>ログファイルをtail -Fしてブラウザに逐次送信するデモ</li>
+</ul>
+
+</div>
+<div data-y="4000" class="step" id="title" data-x="2400">
+<h2>logtail.pl(1)</h2>
+
+<!-- data-x="2400" -->
+<!-- data-y="4000" -->
+
+<?prettify lang=perl?>
+
+<pre><code>  # コネクションのタイムアウトを長めにする
+  Mojo::IOLoop-&gt;stream($self-&gt;tx-&gt;connection)-&gt;timeout(300);
+  # レスポンスのContent-Typeをtext/event-streamにする
+  $self-&gt;res-&gt;headers-&gt;content_type('text/event-stream');
+  # ログファイルをtailで監視する
+  my $pid = open(my $fh, "-|", "tail -q -n 0 -F test.log");
+  if (!$pid) {
+    # 開けなかったらエラーを返す
+    $self-&gt;write("data: can't open test.log.\n\n");
+    return;
+  }
+</code></pre>
+
+</div>
+<div class="step" data-y="4800" data-x="2400" id="title">
+<h2>logtail.pl(2)</h2>
+
+<!-- data-x="2400" -->
+<!-- data-y="4800" -->
+
+<?prettify lang=perl?>
+
+<pre><code>  # ログファイルのハンドルを非同期で処理する
+  my $stream = Mojo::IOLoop::Stream-&gt;new($fh);
+  # ログファイル読み込み時の処理
+  $stream-&gt;on(read =&gt; sub {
+    my ($stream, $bytes) = @_;
+    # すべての行を送信する
+    foreach my $line (split(/\n/, $bytes)) {
+      $self-&gt;write("data: $line\n\n");
+    }
+  });
+</code></pre>
+
+</div>
+<div data-y="5600" class="step" id="title" data-x="2400">
+<h2>logtail.pl(3)</h2>
+
+<!-- data-x="2400" -->
+<!-- data-y="5600" -->
+
+<?prettify lang=perl?>
+
+<pre><code>  # コネクション切断時
+  $self-&gt;on(finish =&gt; sub {
+    my $self = shift;
+    # tailを殺す
+    kill 'QUIT', $pid;
+  });
+  # ログファイルの処理を開始する
+  $stream-&gt;start;
+</code></pre>
+
+</div>
+<div data-x="2400" id="title" class="step" data-y="6400">
+<h2>logtail.pl(4)</h2>
+
+<!-- data-x="2400" -->
+<!-- data-y="6400" -->
+
+<?prettify lang=javascript?>
+
+<pre><code>    var source = new EventSource('&lt;%= url_for 'events' %&gt;');
+    source.onmessage = function(event) {
+      $('#log').append(event.data + '&lt;br/&gt;');
+    };
+</code></pre>
+
+</div>
+<div data-y="8000" class="step" id="title" data-scale="3" data-z="50" data-x="1200">
+<h2>まとめ</h2>
+
+<!-- data-x="1200" -->
+<!-- data-y="8000" -->
+<!-- data-z="50" -->
+<!-- data-scale="3" -->
+
+<ul>
+<li>Mojolicious使うとわりとお手軽にリアルタイムWebを体験できる</li>
+<li>Mojolicious::Liteでちょっと書いて動かしながら試すとわかりやすい</li>
+<li>Mojoliciousのドキュメントは充実してきているけど、細かい部分はソースを見たほうが早い</li>
+<li>今回の発表資料は<a href="https://github.com/niratama/chibapm3">https://github.com/niratama/chibapm3</a>に置いておきます</li>
+</ul>
+
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
